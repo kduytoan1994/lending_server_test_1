@@ -1,0 +1,295 @@
+'use strict'
+const app = require('../server')
+// const util = require('')
+const AccessToken = app.models.AccessToken;
+const agency = app.models.agency;
+const loan = app.models.loan;
+const host = app.models.host;
+const investor = app.models.investor;
+const lend = app.models.lending;
+exports.checkToken = (token) =>
+    new Promise((resolve, reject) => {
+        AccessToken.findById(token)
+            .then(result => {
+                if (result != null)
+                    resolve(result)
+                else {
+                    reject("token not found")
+                }
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
+
+exports.checkToken1 = (token) =>
+    new Promise((resolve, reject) => {
+        AccessToken.findOne({ where: { id: token } })
+            .then(result => {
+                if (result != null)
+                    resolve(result)
+                else {
+                    reject("token not found")
+                }
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
+exports.convertLoan = (loanId) =>
+    new Promise((resolve, reject) => {
+        var loanTemp;
+        loan.findById(loanId)
+            .then(loan => {
+                loanTemp = loan;
+                return host.findById(loan.hostId)
+            })
+            .then(host => {
+                var result = {
+                    id: loanTemp.id,
+                    avatar: host.avatar,
+                    name: loanTemp.name,
+                    type: loanTemp.typeHome,
+                    description: loanTemp.descriptions,
+                    money: loanTemp.amount,
+                    called: loanTemp.called,
+                    address: host.address,
+                    due_date: loanTemp.start_time,
+                    range_time: loanTemp.range_time,
+                    interest: loanTemp.interest,
+                    list_photos: loanTemp.photos
+                }
+                resolve(result)
+            })
+            .catch(err => {
+                reject(err)
+            })
+    })
+exports.exchangeMoneyToInvestor = (token, hostId, investorId, amount) =>
+    new Promise((resolve, reject) => {
+        var walletHost, walletInvestor;
+        checkToken(token)
+            .then(token => {
+                if (token != null) {
+                    return agency.findById(token.userId)
+                } else {
+                    reject('token invalid!')
+                }
+            })
+            .then(agency => {
+                if (agencies == null || agencies.length == 0) {
+                    reject('not agency')
+                } else {
+                    return loan.findOne({ where: { hostId: hostId, agencyId: agency.id } });
+                }
+            })
+            .then(host => {
+                if (host == null) {
+                    reject('host is not of agency')
+                }
+                else {
+                    return wallet.findOne({ where: { ownerId: host.id } })
+                }
+            })
+            .then(wallet => {
+                walletHost = wallet;
+                return wallet.findOne({ where: { ownerId: investorId } })
+            })
+            .then(wallet => {
+                walletInvestor = wallet;
+                if (walletHost.balance < amount) {
+                    reject('not enough money')
+                } else {
+                    walletHost.balance -= amount;
+                    walletInvestor.balance += amount;
+                    walletHost.save(err => {
+                        if (err) {
+                            reject(err)
+                        }
+                    });
+                    walletInvestor.save(err => {
+                        if (err) {
+                            reject(err)
+                        }
+                    });
+                }
+                resolve("success")
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
+exports.exchangeMoney = (token, receiveId, sendId, amount) =>
+    new Promise((resolve, reject) => {
+        var sendWallet, receiveWallet;
+        checkToken(token)
+            .then(token => {
+                if (token != null) {
+                    return wallet.findOne({ where: { ownerId: sendId } })
+                } else {
+                    reject('token invalid!')
+                }
+            })
+            .then(wallet => {
+                sendWallet = wallet;
+                return wallet.findOne({ where: { ownerId: receiveId } })
+            })
+            .then(wallet => {
+                receiveWallet = wallet;
+                if (sendWallet.balance < amount) {
+                    reject('not enough money')
+                } else {
+                    sendWallet.balance -= amount;
+                    receiveWallet.balance += amount;
+                    sendWallet.save(err => {
+                        if (err) {
+                            reject(err)
+                        }
+                    });
+                    receiveWallet.save(err => {
+                        if (err) {
+                            reject(err)
+                        }
+                    });
+                }
+                resolve("success")
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
+var exchangeMoneyWithoutToken = (receiveId, sendId, amount) =>
+    new Promise((resolve, reject) => {
+        var receiveWallet, sendWallet;
+        wallet.findOne({ where: { ownerId: sendId } })
+            .then(wallet => {
+                sendWallet = wallet;
+                return wallet.findOne({ where: { ownerId: receiveId } })
+            })
+            .then(wallet => {
+                receiveWallet = wallet;
+                if (sendWallet.balance < amount) {
+                    reject('not enough money')
+                } else {
+                    sendWallet.balance -= amount;
+                    receiveWallet.balance += amount;
+                    sendWallet.save(err => {
+                        if (err) {
+                            reject(err)
+                        }
+                    });
+                    receiveWallet.save(err => {
+                        if (err) {
+                            reject(err)
+                        }
+                    });
+                }
+                resolve("success")
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
+exports.reCallAllMoneyOfLoan = (loanId) =>
+    new Promise((resolve, reject) => {
+        var hostTemp;
+        var promises = [];
+        loan.findById(loanId)
+            .then(loan => {
+                return host.findById(loan.hostId)
+            })
+            .then(host => {
+                hostTemp = host;
+                return lend.find({ where: { loanId: loanId } })
+            })
+            .then(lends => {
+                if (lends == null || lends.length == 0) {
+                    resolve("success")
+                }
+                console.log('lends', lends)
+                lends.forEach(lend => {
+                    promises.push(investor.findById(lend.investorId)
+                        .then(investor => {
+                            return exchangeMoneyWithoutToken(investor.id, hostTemp.id, lend.amount)
+                        })
+                        .catch(err => {
+                            console.log('errrdsf ', err)
+                            reject(err)
+                        })
+                    )
+                    Q.all(promises)
+                        .then(result => {
+                            console.log('success dfdafdf')
+                            resolve("success")
+                        })
+                })
+
+            })
+            .catch(err => {
+                console.log('errrdsf12 ', err)
+                reject(err)
+            })
+    })
+exports.convertInvestor = (investors) =>
+    new Promise((resolve, reject) => {
+        var result = [];
+        var total = 0;
+        var promises = [];
+        investors.forEach(investor => {
+            promises.push(lend.find({ where: { investorId: investor.id } })
+                .then(lends => {
+                    if (lends.length == 0) {
+                        resolve({result:[]});
+                    } else {
+                        lends.forEach(lend => {
+                            total += lend.amount;
+                        })
+                    }
+                    result.push({
+                        name: investor.name,
+                        lended_money: total,
+                        avatar: investor.avatar
+                    })
+                })
+                .catch(err => {
+                    reject(err);
+                })
+            )
+
+        })
+        Q.all(promises)
+            .then(() => {
+                resolve({result:result})
+            })
+            .catch(err => {
+                reject(err);
+            })
+
+    })
+exports.convertLoans = (loans) =>
+    new Promise((resolve, reject) => {
+        var promises = [];
+        for (var i = 0; i < loans.length; i++) {
+            promises.push(util.convertLoan(loans[i].id)
+                .then(loanHost => {
+                    listLoan.push(loanHost)
+                })
+            )
+        }
+        Q.all(promises)
+            .then(() => {
+                var data = {
+                    list_loan: listLoan,
+                    total_page: loans.length / perPage + 1
+                }
+                var response = new CommonResponse("success", "", data)
+                console.log("response", response)
+                res.json(response)
+            })
+            .catch(err => {
+                var response = new CommonResponse("error", "", err)
+                console.log("response", response)
+                res.json(response)
+            })
+
+    })

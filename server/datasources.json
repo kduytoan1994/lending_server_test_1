@@ -1,0 +1,16 @@
+{
+  "db": {
+    "name": "db",
+    "connector": "memory"
+  },
+  "my_db": {
+    "host": "localhost",
+    "port": 27017,
+    "url": "",
+    "database": "lending_v2",
+    "password": "",
+    "name": "my_db",
+    "user": "",
+    "connector": "mongodb"
+  }
+}
