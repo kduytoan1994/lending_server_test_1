@@ -7,6 +7,7 @@ const loan = app.models.loan;
 const host = app.models.host;
 const investor = app.models.investor;
 const lend = app.models.lending;
+const Q = require('q')
 exports.checkToken = (token) =>
     new Promise((resolve, reject) => {
         AccessToken.findById(token)
