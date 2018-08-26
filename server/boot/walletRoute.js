@@ -143,7 +143,6 @@ module.exports = (app) => {
                     var response = new CommonResponse("success", "", data)
                     console.log("response", response)
                     res.json(response);
-                    return;
                 } else {
                     loanTemp = loans[0];
                     console.log('loanTemp', loanTemp)
@@ -213,6 +212,7 @@ module.exports = (app) => {
 
             })
             .then(interests => {
+
                 interests.forEach(interest => {
                     total_money_will_pay += interest.money;
                 })
