@@ -490,7 +490,7 @@ module.exports = (app) => {
             })
     })
 
-    app.post('/api/getListCompletedLend', (req, res) => {
+    app.post('/api/wallet/getListCompletedLend', (req, res) => {
         var token = req.body.token;
         var loanTemp, total_lend_money, interest, start_time, end_time, total_money_will_receive, listInterest;
         var data = [], rate;
@@ -703,7 +703,7 @@ module.exports = (app) => {
 
     })
 
-    app.post('/api/getWalletInvestor', (req, res) => {
+    app.post('/api/wallet/getWalletInvestor', (req, res) => {
         var token = req.body.token;
         var resultAll = [];
         var investorTemp, available_money, lended_money, lending_money;
