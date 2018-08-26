@@ -7,7 +7,7 @@
     "host": "localhost",
     "port": 27017,
     "url": "",
-    "database": "lending_v2",
+    "database": "lending_v3",
     "password": "",
     "name": "my_db",
     "user": "",

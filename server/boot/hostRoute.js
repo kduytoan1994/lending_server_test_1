@@ -198,13 +198,13 @@ module.exports = (app) => {
                             console.log("response", response)
                         })
                     )
-                    Q.all(promises)
-                        .then(() => {
-                            var data = { list_hosts: result, agency_area: area }
-                            var response = new CommonResponse("success", "", data)
-                            console.log("response", response)
-                            res.json(response)
-                        })
+                })
+                Q.all(promises)
+                .then(() => {
+                    var data = { list_hosts: result, agency_area: area }
+                    var response = new CommonResponse("success", "", data)
+                    console.log("response", response)
+                    res.json(response)
                 })
 
             })
