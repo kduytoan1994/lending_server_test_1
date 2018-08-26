@@ -157,6 +157,8 @@ module.exports = (app) => {
                 if (loanTemp == null) {
                     result = {};
                     called = 0;
+                } else {
+                    called = loanTemp.called
                 }
                 if (packTemp == null || packTemp.length == 0) {
                     packTemp = []
@@ -164,7 +166,7 @@ module.exports = (app) => {
                 var data = {
                     loan: result,
                     list_packages: packTemp,
-                    called: loanTemp.called
+                    called: called
                 }
                 var kq = [];
                 kq.push(data)
@@ -219,7 +221,6 @@ module.exports = (app) => {
 
             })
             .then(interests => {
-
                 interests.forEach(interest => {
                     total_money_will_pay += interest.money;
                 })
