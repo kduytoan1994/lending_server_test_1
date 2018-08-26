@@ -108,7 +108,7 @@ module.exports = (app) => {
 
     })
 
-    app.post('/wallet/getBalanceHost', (req, res) => {
+    app.post('/api/wallet/getBalanceHost', (req, res) => {
         var hostId = req.body.id_host;
         wallet.findOne({ where: { ownerId: hostId } })
             .then(wallet => {
@@ -118,7 +118,7 @@ module.exports = (app) => {
                 res.json(response)
             })
     })
-    app.post('/wallet/getBalanceInvestor', (req, res) => {
+    app.post('/api/wallet/getBalanceInvestor', (req, res) => {
         var investorId = req.body.id_investor;
         wallet.findOne({ where: { ownerId: investorId } })
             .then(wallet => {
