@@ -421,8 +421,8 @@ module.exports = (app) => {
     })
     app.post('/api/wallet/getListOnGoingLend', (req, res) => {
         var token = req.body.token;
-        var loanTemp, total_lend_money, interest, start_time, end_time, total_money_will_receive,
-            next_interest_date, next_interest_money, listInterest, total_money_received;
+        var loanTemp = {}, total_lend_money, interest = 0, start_time, end_time, total_money_will_receive = 0,
+            next_interest_date = 'NA', next_interest_money = 0, listInterest = [], total_money_received = 0;
         var data = [];
         var promises = [];
         var interestTemp;
@@ -431,57 +431,64 @@ module.exports = (app) => {
                 lend.find({ where: { investorId: token.userId, status: 1 } })
             })
             .then(lends => {
-                lends.forEach(lend => {
-                    promises.push(interest.find({ where: { lendingId: lend.id } })
-                        .then(interests => {
-                            listInterest = interests
-                            return loan.findOne({ where: { id: lend.loanId } })
-                        })
-                        .then(loan => {
-                            loanTemp = loan;
-                            return getMoneyReceived(lend.id)
-                        })
-                        .then(total => {
-                            total_money_received = total.total;
-                            return getMoneyWillReceive(lend.id)
-                        })
-                        .then(total => {
-                            total_money_will_receive = total.total;
-                            return getInterestNextMonthOfLend(lend.id);
-                        })
-                        .then(result => {
-                            interestTemp = result;
-                            next_interest_money = result.interest.money;
-                            next_interest_date = result.interest.time;
-                            return Utils.convertLoan(loanTemp.id)
-                        })
-                        .then(result => {
-                            data.push({
-                                loan: result,
-                                total_lend_money: lend.money,
-                                interest: interestTemp.interest.rate,
-                                start_time: lend.start_time,
-                                end_time: lend.end_time,
-                                total_money_will_receive: total_money_will_receive,
-                                next_interest_money: next_interest_money,
-                                next_interest_date: next_interest_date,
-                                total_money_received: total_money_received,
-                                list_interest: listInterest
+                if (lends != null) {
+                    lends.forEach(lend => {
+                        promises.push(interest.find({ where: { lendingId: lend.id } })
+                            .then(interests => {
+                                listInterest = interests
+                                return loan.findOne({ where: { id: lend.loanId } })
                             })
-                        })
-                        .catch(err => {
-                            var response = new CommonResponse("fail", "", err)
+                            .then(loan => {
+                                loanTemp = loan;
+                                return getMoneyReceived(lend.id)
+                            })
+                            .then(total => {
+                                total_money_received = total.total;
+                                return getMoneyWillReceive(lend.id)
+                            })
+                            .then(total => {
+                                total_money_will_receive = total.total;
+                                return getInterestNextMonthOfLend(lend.id);
+                            })
+                            .then(result => {
+                                interestTemp = result;
+                                next_interest_money = result.interest.money;
+                                next_interest_date = result.interest.time;
+                                return Utils.convertLoan(loanTemp.id)
+                            })
+                            .then(result => {
+                                data.push({
+                                    loan: result,
+                                    total_lend_money: lend.money,
+                                    interest: interestTemp.interest.rate,
+                                    start_time: lend.start_time,
+                                    end_time: lend.end_time,
+                                    total_money_will_receive: total_money_will_receive,
+                                    next_interest_money: next_interest_money,
+                                    next_interest_date: next_interest_date,
+                                    total_money_received: total_money_received,
+                                    list_interest: listInterest
+                                })
+                            })
+                            .catch(err => {
+                                var response = new CommonResponse("fail", "", err)
+                                console.log("response", response)
+                                res.json(response)
+                            })
+                        )
+                    })
+                    Q.all(promises)
+                        .then(() => {
+                            var response = new CommonResponse("success", "", data)
                             console.log("response", response)
                             res.json(response)
                         })
-                    )
-                })
-                Q.all(promises)
-                    .then(() => {
-                        var response = new CommonResponse("success", "", data)
-                        console.log("response", response)
-                        res.json(response)
-                    })
+                } else {
+                    var empty = []
+                    var response = new CommonResponse("success", "", empty)
+                    console.log("response", response)
+                    res.json(response)
+                }
             })
             .catch(err => {
                 var response = new CommonResponse("fail", "", err)
