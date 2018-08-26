@@ -271,16 +271,16 @@ module.exports = (app) => {
             })
             .then(loanHost => {
                 var homestay = {
-                        id: loanTemp.id,
-                        type: loanTemp.typeHome,
-                        name: loanTemp.name,
-                        address: loanTemp.address,
-                        description: loanTemp.descriptions,
-                        list_photos: loanTemp.photos,
-                        host_name: hostTemp.name,
-                        host_address: hostTemp.address,
-                        phonenumber: hostTemp.phoneNumber
-                    
+                    id: loanTemp.id,
+                    type: loanTemp.typeHome,
+                    name: loanTemp.name,
+                    address: loanTemp.address,
+                    description: loanTemp.descriptions,
+                    list_photos: loanTemp.photos,
+                    host_name: hostTemp.name,
+                    host_address: hostTemp.address,
+                    phonenumber: hostTemp.phoneNumber
+
                 }
                 var data = {
                     loan: loanHost,
@@ -377,11 +377,13 @@ module.exports = (app) => {
             })
     })
 
-    app.get('/api/checkforeach', (req, res) => {
-        var result = 0;
-        for (var i = 0; i < 10; i++) {
-            result += i;
-        }
-        res.json(result)
+    app.delete('/api/checkforeach', (req, res) => {
+        loan.destroyAll({id: req.body.id})
+            .then(result => {
+                res.json(result)
+            })
+            .catch(err => {
+                res.json(err);
+            })
     })
 }

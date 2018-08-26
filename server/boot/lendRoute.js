@@ -18,6 +18,7 @@ module.exports = (app) => {
         var total = 0;
         var access_token = req.body.token;
         var loanTemp, lendTemp;
+        var isFull = false;
         AccessToken.findOne({ id: access_token }, (err, token) => {
             if (err || (token == null)) {
                 var response = new CommonResponse("error", "", err)
@@ -52,6 +53,7 @@ module.exports = (app) => {
                         loan.called += total;
                         //gọi đủ vốn , chuyển loan status =1 
                         if (loan.called == loan.amount) {
+                            isFull = true;
                             loan.status = 1;
                         }
                         return loan.save();
@@ -119,7 +121,19 @@ module.exports = (app) => {
                         return Q.push(promisesInterest);
                     })
                     .then(() => {
-                        var data = lendTemp;
+                        var data;
+                        if (isFull == true) {
+                            util.updateFullLoan(loanTemp.id)
+                                .then(result => {
+                                    data = lendTemp;
+                                })
+                                .catch(err => {
+                                    var response = new CommonResponse("error", "", err)
+                                    console.log("response", response)
+                                    res.json(response)
+                                })
+                        }
+                        data = lendTemp;
                         var response = new CommonResponse("success", "", data)
                         console.log("response", response)
                         res.json(response)

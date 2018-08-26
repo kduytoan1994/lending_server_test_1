@@ -7,6 +7,8 @@ const loan = app.models.loan;
 const host = app.models.host;
 const investor = app.models.investor;
 const lend = app.models.lending;
+const interest = app.models.interest;
+const constant = require('../constant')
 const Q = require('q')
 exports.checkToken = (token) =>
     new Promise((resolve, reject) => {
@@ -336,4 +338,48 @@ exports.convertInterest = (interest) =>
         }
         resolve(result)
 
+    })
+exports.updateFullLoan = (loanId) =>
+    new Promise((resolve, reject) => {
+        var promises = [];
+        var promises2 = [];
+        var loanTemp;
+        loan.findById(loanId)
+            .then(loanResult => {
+                loanTemp = loanResult;
+                return lend.find({ where: { loanId: loanId } })
+            })
+            .then(lends => {
+                lends.forEach(lend => {
+                    lend.status = 1;
+                    promises.push(lend.save())
+                })
+                return Q.all(promises)
+            })
+            .then(() => {
+                return interest.find({ where: { loanId: loanId } })
+            })
+            .then(interests => {
+                interests.forEach(interest => {
+                    interest.status = 1;
+                    promises2.push(interest.save())
+                })
+                return Q.all(promises2)
+            })
+            .then(() => {
+                return host.findById(loanTemp.hostId)
+            })
+            .then(host => {
+                return exchangeMoneyWithoutToken(host.id, constant.ID_SYSTEM, loanTemp.amount)
+            })
+            .then(result => {
+                if (result == "success") {
+                    resolve("success");
+                }else {
+                    reject("exchange money error")
+                }
+            })
+            .catch(err => {
+                reject(err)
+            })
     })
