@@ -132,7 +132,7 @@ module.exports = (app) => {
     app.post('/api/wallet/getListRegisteredLoan', (req, res) => {
         var token = req.body.token;
         var hostId = req.body.id;
-        var loanTemp, packTemp;
+        var loanTemp, packTemp, called;
         AccessToken.findOne({ where: { id: token } })
             .then(token => {
                 return loan.find({ 'where': { 'hostId': hostId, 'status': 0 } })
@@ -147,13 +147,20 @@ module.exports = (app) => {
                     loanTemp = loans[0];
                     console.log('loanTemp', loanTemp)
                     return pack.find({ where: { loanId: loanTemp.id } })
+                        .then(packs => {
+                            packTemp = packs;
+                            return Utils.convertLoan(loanTemp.id);
+                        })
                 }
             })
-            .then(packs => {
-                packTemp = packs;
-                return Utils.convertLoan(loanTemp.id);
-            })
             .then(result => {
+                if (loanTemp == null) {
+                    result = {};
+                    called = 0;
+                }
+                if (packTemp == null || packTemp.length == 0) {
+                    packTemp = []
+                }
                 var data = {
                     loan: result,
                     list_packages: packTemp,
