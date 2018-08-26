@@ -419,7 +419,7 @@ module.exports = (app) => {
                 res.json(response)
             })
     })
-    app.post('/api/getListOnGoingLend', (req, res) => {
+    app.post('/api/wallet/getListOnGoingLend', (req, res) => {
         var token = req.body.token;
         var loanTemp, total_lend_money, interest, start_time, end_time, total_money_will_receive,
             next_interest_date, next_interest_money, listInterest, total_money_received;
