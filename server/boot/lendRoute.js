@@ -163,4 +163,13 @@ module.exports = (app) => {
             console.log('result', result)
             resolve({ result: result })
         })
+    app.post('/sendmail', (req, res) => {
+        lend.sendEmail()
+            .then(mail => {
+                res.json(mail)
+            })
+            .catch(err => {
+                res.json(err)
+            })
+    })
 }

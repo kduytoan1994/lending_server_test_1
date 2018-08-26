@@ -21,19 +21,23 @@
     "public": true
   },
   "ACL": {
-    "dataSource": "db",
+    "dataSource": "my_db",
     "public": false
   },
   "RoleMapping": {
-    "dataSource": "db",
+    "dataSource": "my_db",
     "public": false,
     "options": {
       "strictObjectIDCoercion": true
     }
   },
   "Role": {
-    "dataSource": "db",
+    "dataSource": "my_db",
     "public": false
+  },
+  "Email" :{
+    "dataSource" : "myEmailDatasource",
+    "public" : false
   },
   "account": {
     "dataSource": "my_db",

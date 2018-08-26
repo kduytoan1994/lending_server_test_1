@@ -196,7 +196,8 @@ module.exports = (app) => {
                     loanTemp = loan;
                     return lend.find({ where: { loanId: loanTemp.id } })
                 } else {
-                    var response = new CommonResponse("success", "", [])
+                    var temp = []
+                    var response = new CommonResponse("success", "", temp)
                     console.log("response", response)
                     res.json(response)
                 }
@@ -221,36 +222,45 @@ module.exports = (app) => {
 
             })
             .then(interests => {
-                interests.forEach(interest => {
-                    total_money_will_pay += interest.money;
-                })
-                return interest.find({ where: { lendingId: lend.id, status: 2 } })
+                if (interests != null) {
+                    interests.forEach(interest => {
+                        total_money_will_pay += interest.money;
+                    })
+                    return interest.find({ where: { lendingId: lend.id, status: 2 } })
+                }
             })
             .then(interests => {
-                interests.forEach(interest => {
-                    total_money_paid += interest.money;
-                })
-                return interest.find({ where: { lendingId: lend.id } })
+                if (interests != null) {
+                    interests.forEach(interest => {
+                        total_money_paid += interest.money;
+                    })
+                    return interest.find({ where: { lendingId: lend.id } })
+                }
             })
             .then(interests => {
-                listInterest = interests;
-                return Utils.convertLoan(loanTemp.id);
+                if (interests != null) {
+                    listInterest = interests;
+                    return Utils.convertLoan(loanTemp.id);
+                }
             })
             .then(loanHost => {
-                var data = {
-                    loan: loanHost,
-                    total_loan_money: loanTemp.amount,
-                    interest: loanTemp.interest,
-                    start_time: loanTemp.start_time,
-                    end_time: loanTemp.end_time,
-                    total_money_will_pay: total_money_will_pay,
-                    total_money_paid: total_money_paid,
-                    next_interest_date: next_interest_date,
-                    next_interest_money: next_interest_money,
-                    list_interest: listInterest
-                }
                 var kq = [];
-                kq.push(data)
+                if (loanHost != null) {
+                    var data = {
+                        loan: loanHost,
+                        total_loan_money: loanTemp.amount,
+                        interest: loanTemp.interest,
+                        start_time: loanTemp.start_time,
+                        end_time: loanTemp.end_time,
+                        total_money_will_pay: total_money_will_pay,
+                        total_money_paid: total_money_paid,
+                        next_interest_date: next_interest_date,
+                        next_interest_money: next_interest_money,
+                        list_interest: listInterest
+                    }
+
+                    kq.push(data)
+                }
                 var response = new CommonResponse("success", "", kq)
                 console.log("response", response)
                 res.json(response)
