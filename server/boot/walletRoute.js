@@ -2,6 +2,7 @@
 module.exports = (app) => {
     const CommonResponse = require('../util/CommonResponse')
     const wallet = app.models.wallet;
+    const Q = require('q');
     const AccessToken = app.models.AccessToken;
     const lend = app.models.lending;
     const interest = app.models.interest;
@@ -141,7 +142,8 @@ module.exports = (app) => {
                     var data = {}
                     var response = new CommonResponse("success", "", data)
                     console.log("response", response)
-                    res.json(response)
+                    res.json(response);
+                    return;
                 } else {
                     loanTemp = loans[0];
                     return pack.find({ where: { loanId: loanTemp.id } })

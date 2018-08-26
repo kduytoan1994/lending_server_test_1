@@ -2,6 +2,7 @@ module.exports = function (app) {
     //get User model from the express app
     const CommonResponse = require('../util/CommonResponse')
     const utils = require('../util/Utils')
+    const Q = require('q');
     const UserModel = app.models.account;
     const Investor = app.models.investor;
     const Agency = app.models.agency;
