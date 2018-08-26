@@ -191,6 +191,38 @@ var exchangeMoneyWithoutToken = (receiveId, sendId, amount) =>
                 reject(err);
             })
     })
+exports.chageMoney = (sendId, receiveId, amount) =>
+    new Promise((resolve, reject) => {
+        var receiveWallet, sendWallet;
+        wallet.findOne({ where: { ownerId: sendId } })
+            .then(wallet => {
+                sendWallet = wallet;
+                return wallet.findOne({ where: { ownerId: receiveId } })
+            })
+            .then(wallet => {
+                receiveWallet = wallet;
+                if (sendWallet.balance < amount) {
+                    reject('not enough money')
+                } else {
+                    sendWallet.balance -= amount;
+                    receiveWallet.balance += amount;
+                    sendWallet.save(err => {
+                        if (err) {
+                            reject(err)
+                        }
+                    });
+                    receiveWallet.save(err => {
+                        if (err) {
+                            reject(err)
+                        }
+                    });
+                }
+                resolve("success")
+            })
+            .catch(err => {
+                reject(err);
+            })
+    })
 exports.reCallAllMoneyOfLoan = (loanId) =>
     new Promise((resolve, reject) => {
         var hostTemp;
@@ -240,7 +272,7 @@ exports.convertInvestor = (investors) =>
             promises.push(lend.find({ where: { investorId: investor.id } })
                 .then(lends => {
                     if (lends.length == 0) {
-                        resolve({result:[]});
+                        resolve({ result: [] });
                     } else {
                         lends.forEach(lend => {
                             total += lend.amount;
@@ -260,7 +292,7 @@ exports.convertInvestor = (investors) =>
         })
         Q.all(promises)
             .then(() => {
-                resolve({result:result})
+                resolve({ result: result })
             })
             .catch(err => {
                 reject(err);
@@ -292,5 +324,16 @@ exports.convertLoans = (loans) =>
                 console.log("response", response)
                 res.json(response)
             })
+
+    })
+exports.convertInterest = (interest) =>
+    new Promise((resovle, reject) => {
+        var result = {
+            id_lend: interest.lendingId,
+            date: interest.date,
+            money: interest.money,
+            status: interest.status
+        }
+        resolve(result)
 
     })

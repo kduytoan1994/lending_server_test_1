@@ -6,6 +6,8 @@ module.exports = (app) => {
     const pack = app.models.pack;
     const interest = app.models.interest;
     const Q = require('q');
+    const util = require('../util/Utils')
+    const constant = require('../constant')
     const investor = app.models.investor;
     const AccessToken = app.models.AccessToken;
 
@@ -24,7 +26,7 @@ module.exports = (app) => {
             }
             else {
                 for (var i = 0; i < listPackage.length; i++) {
-                    promises.push(pack.findOne({ id: listPackage[i] })
+                    promises.push(pack.findById(listPackage[i])
                         .then(pack => {
                             total += pack.amount;
                             idLoan = pack.loanId
@@ -70,6 +72,15 @@ module.exports = (app) => {
                     })
                     .then(lend => {
                         lendTemp = lend;
+                        return util.chageMoney(lendTemp.id, constant.ID_SYSTEM, total)
+                    })
+                    .then(result => {
+                        if (result != 'success') {
+                            var response = new CommonResponse("error", "", "cannot exchange money")
+                            console.log("response", response)
+                            res.json(response)
+                            return;
+                        }
                         let rate;
                         var money = loanTemp.amount;
                         if (money < 30) {
@@ -95,7 +106,7 @@ module.exports = (app) => {
                                             rate: rate,
                                             loanId: loanTemp.id,
                                             lendingId: lendTemp.id,
-                                            status : 0
+                                            status: 0
                                         })
                                     })
                                     .catch(err => {
@@ -122,18 +133,6 @@ module.exports = (app) => {
         })
 
     })
-    app.post('/test', (req, res) => {
-        AccessToken.resolve(req.body.token, function (err, token) {
-            if (err) {
-                console.log(err)
-                res.json(err)
-            } else {
-                console.log("token", token)
-                res.json(token)
-            }
-        });
-    })
-
     app.get('/total/:total', (req, res) => {
         var total = req.params.total;
         res.json(calculateReceiveMoney(total, 10, 3))
