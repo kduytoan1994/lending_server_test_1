@@ -88,12 +88,12 @@ module.exports = (app) => {
                         money = wallet.balance;
                         return loan.find({ where: { hostId: hostId, status: 0 } })
                     })
-                    .then(loan => {
-                        number_registed = loan.length;
+                    .then(loanResult => {
+                        number_registed = loanResult.length;
                         return loan.find({ where: { hostId: hostId, status: 2 } })
                     })
-                    .then(loan => {
-                        number_complete = loan.length;
+                    .then(loanResult => {
+                        number_complete = loanResult.length;
                         return loan.find({ where: { hostId: hostId, status: 1 } })
                     })
                     .then(loan => {
