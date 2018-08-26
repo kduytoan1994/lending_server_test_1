@@ -86,15 +86,15 @@ module.exports = (app) => {
                 wallet.findOne({ where: { ownerId: host.id } })
                     .then(wallet => {
                         money = wallet.balance;
-                        return loan.find({ where: { hostId: host, status: 0 } })
+                        return loan.find({ where: { hostId: hostId, status: 0 } })
                     })
                     .then(loan => {
                         number_registed = loan.length;
-                        return loan.find({ where: { hostId: host, status: 2 } })
+                        return loan.find({ where: { hostId: hostId, status: 2 } })
                     })
                     .then(loan => {
                         number_complete = loan.length;
-                        return loan.find({ where: { hostId: host, status: 1 } })
+                        return loan.find({ where: { hostId: hostId, status: 1 } })
                     })
                     .then(loan => {
                         number_current = loan.length;
