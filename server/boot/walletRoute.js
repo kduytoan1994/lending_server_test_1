@@ -146,6 +146,7 @@ module.exports = (app) => {
                     return;
                 } else {
                     loanTemp = loans[0];
+                    console.log('loanTemp', loanTemp)
                     return pack.find({ where: { loanId: loanTemp.id } })
                 }
             })
@@ -263,11 +264,13 @@ module.exports = (app) => {
                 return loan.find({ 'where': { 'hostId': hostId, 'status': 2 } })
             })
             .then(loans => {
-                console.log('loan', loan)
-                if (loans == null) {
-                    var response = new CommonResponse("success", "", [])
+                console.log('loan', loans)
+                if (loans == null || loans.length == 0) {
+                    var temp = []
+                    var response = new CommonResponse("success", "", temp)
                     console.log("response", response)
                     res.json(response)
+                    return;
                 } else {
                     loans.forEach(loan => {
                         var loanTemp;
